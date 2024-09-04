@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte avec Style Bleu</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 100vh;
+            width: 100%;
+        }
+        .circle-label {
+            background-color: #7cb5ec; /* Couleur douce pour les pays */
+            border-radius: 50%;
+            color: white;
+            text-align: center;
+            font-size: 14px;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            font-weight: bold;
+        }
+        .city-label {
+            background-color: #90ed7d; /* Vert clair pour les villes */
+            border-radius: 50%;
+            color: white;
+            text-align: center;
+            font-size: 12px;
+            width: 25px;
+            height: 25px;
+            line-height: 25px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // Initialisation de la carte Leaflet.js
+        var map = L.map('map').setView([31.7917, -7.0926], 3); // Vue générale sur le Maroc
+
+        // Ajouter une couche CartoDB basemap en bleu
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://carto.com/">CARTO</a> contributors',
+            subdomains: 'abcd'
+        }).addTo(map);
+
+        var data = {
+            "Maroc": {
+                "agencesTotal": 5,
+                "villes": {
+                    "Casablanca": { "count": 3, "quartiers": { "Maarif": [33.587, -7.625], "Zerktouni": [33.580, -7.623], "Ain Diab": [33.594, -7.667] }},
+                    "Marrakech": { "count": 1, "quartiers": { "Gueliz": [31.634, -8.008] }},
+                    "Rabat": { "count": 1, "quartiers": { "Agdal": [34.020, -6.836] }}
+                }
+            },
+            "France": {
+                "agencesTotal": 5,
+                "villes": {
+                    "Paris": { "count": 3, "quartiers": { "Champs-Elysées": [48.870, 2.311], "Montmartre": [48.886, 2.343], "Hay Riad": [48.855, 2.345] }},
+                    "Lyon": { "count": 1, "quartiers": { "Presqu'île": [45.764, 4.835] }},
+                    "Marseille": { "count": 1, "quartiers": { "Le Panier": [43.299, 5.373] }}
+                }
+            },
+            "Espagne": {
+                "agencesTotal": 3,
+                "villes": {
+                    "Madrid": { "count": 2, "quartiers": { "Centro": [40.416, -3.704], "Salamanca": [40.429, -3.678] }},
+                    "Barcelone": { "count": 1, "quartiers": { "Eixample": [41.388, 2.161] }}
+                }
+            }
+        };
+
+        // Fonction pour créer un DivIcon avec un nombre
+        function createLabelIcon(className, labelText) {
+            return L.divIcon({
+                className: className,
+                html: labelText,
+                iconSize: [30, 30],
+                iconAnchor: [15, 15] // Centrer le texte sur le cercle
+            });
+        }
+
+        // Créer des marqueurs pour les pays avec le nombre total d'agences
+        var countryMarkers = {};
+        var cityMarkers = [];
+        var agencyMarkers = [];
+
+        for (var country in data) {
+            var countryLatLng;
+            switch (country) {
+                case 'Maroc': countryLatLng = [31.7917, -7.0926]; break;
+                case 'France': countryLatLng = [46.6034, 1.8883]; break;
+                case 'Espagne': countryLatLng = [40.4637, -3.7492]; break;
+            }
+
+            var circleMarker = L.marker(countryLatLng, {
+                icon: createLabelIcon('circle-label', data[country].agencesTotal)
+            }).addTo(map)
+            .bindPopup('<b>' + country + '</b><br>' + data[country].agencesTotal + ' agences');
+
+            countryMarkers[country] = circleMarker;
+        }
+
+        map.on('zoomend', function() {
+            var currentZoom = map.getZoom();
+
+            if (currentZoom >= 5 && currentZoom < 8) {
+                for (var country in countryMarkers) {
+                    map.removeLayer(countryMarkers[country]);
+                }
+
+                for (var country in data) {
+                    for (var city in data[country].villes) {
+                        var cityLatLng;
+                        switch (city) {
+                            case 'Casablanca': cityLatLng = [33.5731, -7.5898]; break;
+                            case 'Marrakech': cityLatLng = [31.6295, -8.0083]; break;
+                            case 'Rabat': cityLatLng = [34.020, -6.836]; break;
+                            case 'Paris': cityLatLng = [48.8566, 2.3522]; break;
+                            case 'Lyon': cityLatLng = [45.7640, 4.8357]; break;
+                            case 'Marseille': cityLatLng = [43.2965, 5.3698]; break;
+                            case 'Madrid': cityLatLng = [40.4168, -3.7038]; break;
+                            case 'Barcelone': cityLatLng = [41.3851, 2.1734]; break;
+                        }
+
+                        var cityMarker = L.marker(cityLatLng, {
+                            icon: createLabelIcon('city-label', data[country].villes[city].count)
+                        }).addTo(map)
+                        .bindPopup('<b>' + city + '</b><br>' + data[country].villes[city].count + ' agences');
+
+                        cityMarkers.push(cityMarker);
+                    }
+                }
+            }
+
+            if (currentZoom >= 8) {
+                cityMarkers.forEach(function(marker) {
+                    map.removeLayer(marker);
+                });
+
+                for (var country in data) {
+                    for (var city in data[country].villes) {
+                        var quartiers = data[country].villes[city].quartiers;
+                        for (var quartier in quartiers) {
+                            var agencyMarker = L.marker(quartiers[quartier]).addTo(map)
+                            .bindPopup('<b>' + quartier + '</b><br>' + city);
+
+                            agencyMarkers.push(agencyMarker);
+                        }
+                    }
+                }
+            }
+
+            if (currentZoom < 5) {
+                // Masquer les villes et agences
+                cityMarkers.forEach(function(marker) {
+                    map.removeLayer(marker);
+                });
+                agencyMarkers.forEach(function(marker) {
+                    map.removeLayer(marker);
+                });
+
+                // Afficher les pays
+                for (var country in countryMarkers) {
+                    map.addLayer(countryMarkers[country]);
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>
