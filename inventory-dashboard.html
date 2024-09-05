@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Carte mondiale avec retour vers vmap</title>
+
+    <!-- jqvMap CSS -->
+    <link rel="stylesheet" href="assets/vendor/jqvMap/jqvmap.min.css">
+    <style>
+        #map {
+            height: 100vh;
+            width: 100%;
+            display: none; /* La carte des agences est cachée au début */
+        }
+        #vmap {
+            height: 100vh;
+            width: 100%;
+        }
+    </style>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+<body>
+
+    <!-- jqvMap (carte du monde) -->
+    <div id="vmap"></div>
+
+    <!-- Leaflet (carte des agences) -->
+    <div id="map"></div>
+
+    <!-- jQuery et jqvMap JS -->
+    <script src="assets/js/jquery-3.3.1.min.js"></script>
+    <script src="assets/vendor/jqvMap/jquery.vmap.min.js"></script>
+    <script src="assets/vendor/jqvMap/maps/jquery.vmap.world.js"></script>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <script>
+        var map; // Variable pour stocker la carte Leaflet
+        var mapInitialized = false; // Indicateur pour savoir si la carte Leaflet a déjà été initialisée
+
+        // Initialisation de jqvMap (carte du monde)
+        $(document).ready(function () {
+            $('#vmap').vectorMap({
+                map: 'world_en',
+                backgroundColor: '#ffffff',
+                borderColor: '#fff',
+                borderOpacity: 0.5,
+                borderWidth: 1,
+                color: '#A9CCE3',
+                enableZoom: true,
+                hoverColor: '#5DADE2',
+                selectedColor: '#2980B9',
+                colors: {
+                    'ma': '#0051BA', // Maroc
+                    'fr': '#0051BA', // France
+                    'es': '#0051BA', // Espagne
+                    'ca': '#0051BA', // Canada
+                    'ae': '#0051BA',  // Émirats Arabes Unis
+                    'au': '#0051BA'  // Émirats Arabes Unis
+                },
+                onRegionClick: function (event, code) {
+                    var country = code.toUpperCase();
+                    switch (country) {
+                        case 'FR':
+                            zoomToCountry('France', [46.6034, 1.8883], 6);
+                            break;
+                        case 'MA':
+                            zoomToCountry('Maroc', [31.7917, -7.0926], 6);
+                            break;
+                        case 'ES':
+                            zoomToCountry('Espagne', [40.4637, -3.7492], 6);
+                            break;
+                        case 'CA':
+                            zoomToCountry('Canada', [56.1304, -106.3468], 4);
+                            break;
+                        case 'AE':
+                            zoomToCountry('Émirats Arabes Unis', [23.4241, 53.8478], 7);
+                            break;
+                        default:
+                            alert("Aucune agence pour ce pays.");
+                    }
+                }
+            });
+        });
+
+        // Fonction pour afficher la carte détaillée avec zoom sur un pays
+        function zoomToCountry(countryName, coords, zoomLevel) {
+            // Cacher la carte du monde et afficher la carte détaillée
+            document.getElementById('vmap').style.display = 'none';
+            document.getElementById('map').style.display = 'block';
+
+            // Initialiser la carte Leaflet si elle n'existe pas encore
+            if (!mapInitialized) {
+                map = L.map('map').setView(coords, zoomLevel);
+
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png', {
+                    attribution: '&copy; <a href="https://carto.com/">CARTO</a> contributors',
+                    subdomains: 'abcd'
+                }).addTo(map);
+
+                mapInitialized = true;
+            } else {
+                // Si la carte est déjà initialisée, on recentre simplement la vue
+                map.setView(coords, zoomLevel);
+            }
+
+            // Ajouter des marqueurs pour les agences du pays sélectionné
+            var data = {
+                "France": {
+                    "Paris": { "count": 3, "quartiers": { "Champs-Elysées": [48.870, 2.311], "Montmartre": [48.886, 2.343], "Hay Riad": [48.855, 2.345] }},
+                    "Lyon": { "count": 1, "quartiers": { "Presqu'île": [45.764, 4.835] }},
+                    "Toulouse": { "count": 1, "quartiers": { "Capitole": [43.604, 1.444], "Minimes": [43.589, 1.468] }},
+                    "Valenciennes": { "count": 1, "quartiers": { "Centre Ville": [50.353, 3.522], "Sambreville": [50.347, 3.530] }}
+                },
+                "Maroc": {
+                    "Casablanca": { "count": 3, "quartiers": { "Maarif": [33.587, -7.625], "Zerktouni": [33.580, -7.623], "Ain Diab": [33.594, -7.667] }},
+                    "Rabat": { "count": 1, "quartiers": { "Agdal": [34.020, -6.836] }},
+                    "Tanger": { "count": 1, "quartiers": { "City Center": [35.779, -5.807], "Al Houara": [35.767, -5.798] }},
+                    "Kénitra": { "count": 1, "quartiers": { "Centre": [34.261, -6.585], "Sidi Yahya": [34.275, -6.590] }}
+                },
+                "Espagne": {
+                    "Madrid": { "count": 2, "quartiers": { "Centro": [40.416, -3.704], "Salamanca": [40.429, -3.678] }},
+                    "Barcelone": { "count": 1, "quartiers": { "Eixample": [41.388, 2.161] }},
+                    "Saragosse": { "count": 1, "quartiers": { "El Tubo": [41.648, -0.887], "Delicias": [41.635, -0.877] }},
+                    "Valence": { "count": 1, "quartiers": { "Ruzafa": [39.470, -0.377], "Camins al Grau": [39.469, -0.373] }}
+                },
+                "Canada": {
+                    "Montréal": { "count": 1, "quartiers": { "Downtown": [45.5017, -73.5673], "Plateau": [45.521, -73.568] }},
+                    "Toronto": { "count": 1, "quartiers": { "North York": [43.7615, -79.4111], "Scarborough": [43.775, -79.235] }},
+                    "Vancouver": { "count": 1, "quartiers": { "Gastown": [49.2827, -123.1207], "Kitsilano": [49.2769, -123.155] }}
+                },
+                "Émirats Arabes Unis": {
+                    "Dubaï": { "count": 1, "quartiers": { "Downtown": [25.2048, 55.2708], "Marina": [25.079, 55.140] }},
+                    "Abu Dhabi": { "count": 1, "quartiers": { "Corniche": [24.4539, 54.3773], "Yas Island": [24.500, 54.600] }}
+                }
+            };
+
+            // Ajouter les marqueurs pour les agences du pays
+            if (data[countryName]) {
+                for (var city in data[countryName]) {
+                    for (var quartier in data[countryName][city].quartiers) {
+                        var quartierLatLng = data[countryName][city].quartiers[quartier];
+                        
+                        L.marker(quartierLatLng).addTo(map)
+                        .bindPopup('<b>' + quartier + '</b><br>' + city);
+                    }
+                }
+            }
+
+            // Événement pour revenir à vmap lorsque le zoom est inférieur à 4
+            map.on('zoomend', function() {
+                if (map.getZoom() < 4) {
+                    document.getElementById('map').style.display = 'none';
+                    document.getElementById('vmap').style.display = 'block';
+                    map.off('zoomend'); // Désactiver cet événement jusqu'au prochain zoom
+                }
+            });
+        }
+    </script>
+
+</body>
+</html>
