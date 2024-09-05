@@ -14,6 +14,8 @@ Une carte interactive construite avec **Leaflet.js** et **CartoDB** pour affiche
 ![G2](https://github.com/user-attachments/assets/ee628a29-6091-48e3-874c-564646cbf133)
 ![G3](https://github.com/user-attachments/assets/c11704ab-9da8-4269-8d6e-8d3cf75ac79b)
 ![G4](https://github.com/user-attachments/assets/400293bf-ccca-4e15-bc41-d34322ac9c42)
+![a1](https://github.com/user-attachments/assets/39a54330-2941-43ad-8f7b-78712d152c10)
+![Carte-mondiale-avec-retour-vers-vmap](https://github.com/user-attachments/assets/b872c1b4-fbe8-4c71-bd12-f681f9c62c18)
 
 ## Technologies utilisées
 
